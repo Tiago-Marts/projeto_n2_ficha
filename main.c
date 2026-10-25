@@ -28,10 +28,9 @@ typedef struct {
     char classe[MAX_CLASSE];
     int nivel;
     int exp;
-    Atributos atributos;
+    int atributos[6];
     Atributos modificadores_atributos;
     char descricao[MAX_DESC];
-    Item *equipamentos;
 } Personagem;
 
 
@@ -77,36 +76,85 @@ int add_personagem(Personagem *personagem, Personagens *array_personagens){
     return 1;
 }
 
-int atributo__distribuicao_padrao(Personagem *personagem){
+void menu_atributos(){
+    printf("ATRIBUTOS: \n");
+    printf("\t1.Constituicao\n");
+    printf("\t2.Destreza\n");
+    printf("\t3.Sabedoria\n");
+    printf("\t4.Carisma\n");
+    printf("\t5.Inteligencia\n");
+    printf("\t6.Forca\n");
+}
+
+void define_atributo(Personagem* personagem, int escolha, int valor){
 
 }
 
-int atributo_soma_3d6(Personagem *personagem){
+//Todo: Nao pode repedir atributo
+void atributo__distribuicao_padrao(Personagem *personagem){
+   
+    
+}
+
+//Retorna a soma de 3d6
+int roda_3d6(){
+    int d1, d2, d3;
+    d1 = rand()%6 + 1;
+    d2 = rand()%6 + 1;
+    d3 = rand()%6 + 1;
+
+    int soma = (d1+d2+d3);
+
+    printf("Resultados: %d - %d - %d - SOMA: %d\n", d1,d2,d3, soma);
+    return soma;
+}
+
+void atributo_soma_3d6(Personagem *personagem){
+
 
 }
 
 //Cria personagem
 int criacao_personagem(Personagem *personagem){
-    Personagem personagem_novo;
+
 
     printf("Digite o nome do personagem: ");
-    fgets(personagem_novo.nome, MAX_NOME, stdin);
+    fgets(personagem->nome, MAX_NOME, stdin);
 
     printf("Digite a classe do personagem: ");
-    fgets(personagem_novo.classe, MAX_CLASSE, stdin);
+    fgets(personagem->classe, MAX_CLASSE, stdin);
 
     printf("Digite uma descricao simples: ");
-    fgets(personagem_novo.descricao, MAX_DESC, stdin);
+    fgets(personagem->descricao, MAX_DESC, stdin);
 
-    personagem_novo.nivel = 0;
-    personagem_novo.exp = 0;
+    personagem->nivel = 0;
+    personagem->exp = 0;
 
     int opt_atributos = 0;
-    printf("OPCAO DE ATRIBUTOS: \n");
-    printf("\t1. Definição padrão (15,14,13,12,10,8) \n");
-    printf("\t2. Soma aleatoria de 3 dados de 6 \n");
-    printf("Digite como deseja definir seus atributos: \n");
-    scanf("%d", &opt_atributos);
+    while(opt_atributos != 1 && opt_atributos != 2){
+        printf("OPCAO DE ATRIBUTOS: \n");
+        printf("\t1. Definição padrão (15,14,13,12,10,8) \n");
+        printf("\t2. Soma aleatoria de 3 dados de 6 \n");
+        printf("Digite como deseja definir seus atributos: \n");
+        scanf("%d", &opt_atributos);
+
+        switch (opt_atributos)
+        {
+        case 1:
+            atributo__distribuicao_padrao(personagem);
+            break;
+
+        case 2:
+            atributo_soma_3d6(personagem);
+            break;
+        
+        default:
+            printf("Opcao invalida. Tente novamente\n");
+            break;
+        }
+    }
+
+    return 1;
 }
 
 
@@ -115,11 +163,10 @@ int main(void){
     Personagens *banco_personagens = create_personagens();
     Personagem teste_personagem;
     
-    printf("Digite o nome do personagem: ");
-    fgets(teste_personagem.nome, MAX_NOME, stdin);
 
-    add_personagem(&teste_personagem, banco_personagens);
-    printf("%s", banco_personagens->personagem_ptrs[0].nome);
+
+
+
 
     //Desaloca
     free(banco_personagens->personagem_ptrs);
