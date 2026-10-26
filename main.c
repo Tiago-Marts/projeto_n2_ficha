@@ -41,8 +41,7 @@ typedef struct {
 } Personagens;
 
 //Inicializa o array de personagens
-Personagens *create_personagens(){
-    Personagens *personagens;
+void create_personagens(Personagens *personagens){
     personagens->capacidade_array = 100; //Arbitrario
     personagens->contador = 0;
     personagens->personagem_ptrs = calloc(personagens->capacidade_array, sizeof(personagens->personagem_ptrs));
@@ -50,10 +49,9 @@ Personagens *create_personagens(){
     //Trativa
     if(!personagens->personagem_ptrs){
         printf("Erro na criacao do array de personagens!\n");
-        return NULL;
-    } 
+        return;
+    }
 
-    return personagens;
 }
 
 
@@ -86,14 +84,14 @@ void menu_atributos(){
     printf("\t6.Forca\n");
 }
 
-void define_atributo(Personagem* personagem, int escolha, int valor){
-
+void define_atributo(Personagem* personagem, int atributo, int valor){
+    personagem->atributos[atributo-1] = valor;
 }
 
 //Todo: Nao pode repedir atributo
 void atributo__distribuicao_padrao(Personagem *personagem){
-   
-    
+
+
 }
 
 //Retorna a soma de 3d6
@@ -110,8 +108,19 @@ int roda_3d6(){
 }
 
 void atributo_soma_3d6(Personagem *personagem){
+    int cons = roda_3d6();
+    int dex = roda_3d6();
+    int sab = roda_3d6();
+    int car = roda_3d6();
+    int intel = roda_3d6();
+    int forc = roda_3d6();
 
-
+    define_atributo(personagem, 1, cons);
+    define_atributo(personagem, 2, dex);
+    define_atributo(personagem, 3, sab);
+    define_atributo(personagem, 4, car);
+    define_atributo(personagem, 5, intel);
+    define_atributo(personagem, 6, forc);
 }
 
 //Cria personagem
@@ -147,7 +156,7 @@ int criacao_personagem(Personagem *personagem){
         case 2:
             atributo_soma_3d6(personagem);
             break;
-        
+
         default:
             printf("Opcao invalida. Tente novamente\n");
             break;
@@ -160,12 +169,17 @@ int criacao_personagem(Personagem *personagem){
 
 
 int main(void){
-    Personagens *banco_personagens = create_personagens();
+    Personagens *banco_personagens;
+    create_personagens(banco_personagens);
+
     Personagem teste_personagem;
-    
 
 
-
+    criacao_personagem(&teste_personagem);
+    add_personagem(&teste_personagem, banco_personagens);
+    printf("NOME: %s", banco_personagens->personagem_ptrs[0].nome);
+    printf("NIVEL: %d\n", banco_personagens->personagem_ptrs[0].nivel);
+    printf("DEX: %d\n", banco_personagens->personagem_ptrs[0].atributos[1]);
 
 
     //Desaloca
