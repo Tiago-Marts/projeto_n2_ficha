@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 //macros
 #define MAX_NOME 50
@@ -8,15 +9,7 @@
 
 
 typedef struct {
-    int cons;
-    int dex;
-    int sab;
-    int charis;
-    int intelig;
-    int forc;
-} Atributos;
-
-typedef struct {
+    char nome_item[MAX_NOME];
     char descricao_item[MAX_DESC];
 } Item;
 
@@ -24,12 +17,12 @@ typedef struct {
 //Personagem
 typedef struct {
     unsigned int id_personagem;
-    char nome[MAX_NOME];
+    char *nome;
     char classe[MAX_CLASSE];
     int nivel;
     int exp;
     int atributos[6];
-    Atributos modificadores_atributos;
+    int mod_atributos[6];
     char descricao[MAX_DESC];
 } Personagem;
 
@@ -40,6 +33,7 @@ typedef struct {
     size_t contador;
 } Personagens;
 
+//CREATE
 //Inicializa o array de personagens
 void create_personagens(Personagens *personagens){
     personagens->capacidade_array = 100; //Arbitrario
@@ -53,7 +47,6 @@ void create_personagens(Personagens *personagens){
     }
 
 }
-
 
 //Adiciona um personagem no array de personagens
 int add_personagem(Personagem *personagem, Personagens *array_personagens){
@@ -88,13 +81,24 @@ void define_atributo(Personagem* personagem, int atributo, int valor){
     personagem->atributos[atributo-1] = valor;
 }
 
+void define_mod_atributos(Personagem* personagem, int atributo, int valor){
+    personagem->mod_atributos[atributo-1] = valor;
+}
+
 //Todo: Nao pode repedir atributo
 void atributo__distribuicao_padrao(Personagem *personagem){
 
-
 }
 
-//Retorna a soma de 3d6
+//A gente usa o metodo do D&D 5e para calcular os modificadores de atributos
+void calcula_mod_atributos(Personagem *personagem){
+    for(int i = 1; i <= 6; i++){
+        int atributo = personagem->atributos[i-1];
+        define_mod_atributos(personagem, i, (atributo-10)/2);
+    }
+}
+
+//Retorna a soma de 3 valores de 1 à 6
 int roda_3d6(){
     int d1, d2, d3;
     d1 = rand()%6 + 1;
@@ -107,6 +111,7 @@ int roda_3d6(){
     return soma;
 }
 
+//Executa a seleção de valores aleatorios e define os atributos a partir deles
 void atributo_soma_3d6(Personagem *personagem){
     int cons = roda_3d6();
     int dex = roda_3d6();
@@ -123,11 +128,13 @@ void atributo_soma_3d6(Personagem *personagem){
     define_atributo(personagem, 6, forc);
 }
 
-//Cria personagem
+//Cria item
+
+//Cria personagem e retorna 1 se sucesso e 0 se falha em alguma etapa
 int criacao_personagem(Personagem *personagem){
-
-
+    personagem->nome = (char*)malloc((MAX_NOME) * sizeof(char)); //Aloca memoria pro nome
     printf("Digite o nome do personagem: ");
+    fflush(stdin);
     fgets(personagem->nome, MAX_NOME, stdin);
 
     printf("Digite a classe do personagem: ");
@@ -136,7 +143,7 @@ int criacao_personagem(Personagem *personagem){
     printf("Digite uma descricao simples: ");
     fgets(personagem->descricao, MAX_DESC, stdin);
 
-    personagem->nivel = 0;
+    personagem->nivel = 1;
     personagem->exp = 0;
 
     int opt_atributos = 0;
@@ -161,11 +168,48 @@ int criacao_personagem(Personagem *personagem){
             printf("Opcao invalida. Tente novamente\n");
             break;
         }
+
+        //Define o modificador dos atributos
+        calcula_mod_atributos(personagem);
+
+        return 1;
     }
 
     return 1;
 }
 
+//BUSCA (Necessaria para UPDATE e DELETE)
+// Busca por id. Retorna o ponteiro do personagem encotrado.Se nao encontrar nada, retorna NULL
+Personagem* busca_personagem_por_id(unsigned int id_busca, Personagens* banco_personagens){
+    Personagem* resultado_busca = NULL;
+    for(size_t i = 0; i < banco_personagens->contador; i++){
+        if(id_busca == banco_personagens->personagem_ptrs[i].id_personagem){
+            printf("Personagem encontrado!\n");
+            resultado_busca = &banco_personagens->personagem_ptrs[i];
+            return resultado_busca;
+        }
+    }
+
+    return resultado_busca;
+}
+
+// Busca o personagem por nome e retorna o ponteiro encontrado. Se nao encontrar nada retorna NULL
+Personagem* busca_personagem_por_nome(char *nome_busca, Personagens* banco_personagens){
+    Personagem* resultado_busca = NULL;
+    for(size_t i = 0; i < banco_personagens->contador; i++){
+        if(!strcmp(nome_busca, banco_personagens->personagem_ptrs[i].nome)){
+            printf("Personagem encontrado!\n");
+            resultado_busca = &banco_personagens->personagem_ptrs[i];
+            return resultado_busca;
+        }
+    }
+
+    return resultado_busca;
+}
+
+//UPDATE
+
+//DELETE
 
 
 int main(void){
@@ -177,12 +221,31 @@ int main(void){
 
     criacao_personagem(&teste_personagem);
     add_personagem(&teste_personagem, banco_personagens);
-    printf("NOME: %s", banco_personagens->personagem_ptrs[0].nome);
+    printf("ID: %d - NOME: %s",banco_personagens->personagem_ptrs[0].id_personagem, banco_personagens->personagem_ptrs[0].nome);
     printf("NIVEL: %d\n", banco_personagens->personagem_ptrs[0].nivel);
-    printf("DEX: %d\n", banco_personagens->personagem_ptrs[0].atributos[1]);
 
+
+    printf("DEX: %d ", banco_personagens->personagem_ptrs[0].atributos[1]);
+    int mod = banco_personagens->personagem_ptrs[0].mod_atributos[1];
+    if( mod > 0 ){
+        printf("(+%d)\n", mod );
+    } else if ( mod < 0){
+        printf("(-%d)\n", mod);
+    } else {
+        printf("(%d)\n", mod);
+    }
+
+
+    Personagem* teste_busca = busca_personagem_por_nome("tigas\n", banco_personagens);
+
+    if(teste_busca){
+        printf("NOME DO PERSONAGEM BUSCADO POR ID: %s", teste_busca->nome);
+    } else {
+        printf("Peronsagem NAO ENCONTRADO!\n");
+    }
 
     //Desaloca
+    free(teste_personagem.nome);
     free(banco_personagens->personagem_ptrs);
     return 0;
 }
