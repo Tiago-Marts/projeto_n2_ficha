@@ -209,6 +209,100 @@ Personagem* busca_personagem_por_nome(char *nome_busca, Personagens* banco_perso
 
 //UPDATE
 
+//UPDATE do nome. Retorna 1 se sucesso, 0 se falha
+int update_nome_personagem(Personagem* personagem){
+
+    char* novo_nome = (char*) malloc((MAX_NOME) * sizeof(char));
+    if(!novo_nome){
+        printf("Erro na alocacao de atualizacao\n");
+        return 0;
+    }
+
+    printf("O nome atual do persoangem eh: %s", personagem->nome);
+ 
+    int n;
+    while((n = getchar() != '\n' && n != EOF)); //Outra limpeza de buffer
+
+    printf("Digite o novo nome do personagem: \n");
+    fgets(novo_nome, MAX_NOME, stdin);
+
+    char* resultado_copia = NULL;
+    resultado_copia = strcpy(personagem->nome, novo_nome);
+    free(novo_nome); //Desaloca o espaco da memoria
+
+    if(!resultado_copia){
+        printf("Erro na atualizacao do nome\n");
+        return 0;
+    }
+
+
+    return 1;
+    
+}
+
+
+//UPDATE da classe. Retorna 1 se sucesso, 0 se falha
+int update_classe_personagem(Personagem* personagem){
+
+    char* nova_classe = (char*) malloc((MAX_CLASSE) * sizeof(char));
+    if(!nova_classe){
+        printf("Erro na alocacao de atualizacao\n");
+        return 0;
+    }
+
+    printf("A classe atual do persoangem eh: %s", personagem->classe);
+ 
+    int n;
+    while((n = getchar() != '\n' && n != EOF)); //Outra limpeza de buffer
+
+    printf("Digite a nova classe do personagem: \n");
+    fgets(nova_classe, MAX_CLASSE, stdin);
+
+    char* resultado_copia = NULL;
+    resultado_copia = strcpy(personagem->classe, nova_classe);
+    free(nova_classe); //Desaloca o espaco da memoria
+
+    if(!resultado_copia){
+        printf("Erro na atualizacao da classe\n");
+        return 0;
+    }
+
+
+    return 1;
+    
+}
+
+//UPDATE da descricao. Retorna 1 se sucesso, 0 se falha
+int update_descricao_personagem(Personagem* personagem){
+
+    char* nova_desc = (char*) malloc((MAX_DESC) * sizeof(char));
+    if(!nova_desc){
+        printf("Erro na alocacao de atualizacao\n");
+        return 0;
+    }
+
+    printf("A descricao atual do persoangem eh: %s", personagem->descricao);
+ 
+    int n;
+    while((n = getchar() != '\n' && n != EOF)); //Outra limpeza de buffer
+
+    printf("Digite a nova descricao do personagem: \n");
+    fgets(nova_desc, MAX_DESC, stdin);
+
+    char* resultado_copia = NULL;
+    resultado_copia = strcpy(personagem->descricao, nova_desc);
+    free(nova_desc); //Desaloca o espaco da memoria
+
+    if(!resultado_copia){
+        printf("Erro na atualizacao da descricao\n");
+        return 0;
+    }
+
+
+    return 1;
+    
+}
+
 //DELETE
 
 
@@ -216,6 +310,8 @@ int main(void){
     Personagens *banco_personagens;
     create_personagens(banco_personagens);
 
+
+    //Teste temporario de criacao. Vou apagar depois
     Personagem teste_personagem;
 
 
@@ -243,6 +339,9 @@ int main(void){
     } else {
         printf("Peronsagem NAO ENCONTRADO!\n");
     }
+
+    update_descricao_personagem(teste_busca);
+    printf("DESC NOVA: %s", teste_busca->descricao);
 
     //Desaloca
     free(teste_personagem.nome);
