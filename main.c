@@ -114,19 +114,10 @@ int roda_3d6(){
 
 //Executa a seleção de valores aleatorios e define os atributos a partir deles
 void atributo_soma_3d6(Personagem *personagem){
-    int cons = roda_3d6();
-    int dex = roda_3d6();
-    int sab = roda_3d6();
-    int car = roda_3d6();
-    int intel = roda_3d6();
-    int forc = roda_3d6();
-
-    define_atributo(personagem, 1, cons);
-    define_atributo(personagem, 2, dex);
-    define_atributo(personagem, 3, sab);
-    define_atributo(personagem, 4, car);
-    define_atributo(personagem, 5, intel);
-    define_atributo(personagem, 6, forc);
+    for(int i = 1; i <= 6; i++){
+        int valor_atributo = roda_3d6();
+        define_atributo(personagem, i, valor_atributo);
+    }
 }
 
 //Cria item
