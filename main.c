@@ -303,6 +303,79 @@ int update_descricao_personagem(Personagem* personagem){
     
 }
 
+//UPDATE do atributo. Retorna 1 se sucesso, 0 se falha
+int update_atributo_personagem(Personagem* personagem){
+
+    int atributo = 0;
+    int novo_atributo = 0;
+
+    menu_atributos();
+    printf("Digite o atributo que deseja atualizar: ");
+    scanf("%d", &atributo);
+
+    if(atributo < 1 || atributo > 6){
+        printf("ERRO: atributo nao localizado. Retornando...\n");
+        return 0;
+    }
+
+    printf("O valor do atributo atual do persoangem eh: %d\n", personagem->atributos[atributo]);
+ 
+    int n;
+    while((n = getchar() != '\n' && n != EOF)); //Outra limpeza de buffer
+
+    printf("Digite o novo valor do atributo do personagem: ");
+    scanf("%d", &novo_atributo); //TODO: Adicionar tratamento de erro aqui
+
+    define_atributo(personagem, atributo, novo_atributo);
+    define_mod_atributos(personagem, atributo, ((personagem->atributos[atributo-1]-10)/2)); //Faz a modificacao manualmente, mais simples
+
+
+    return 1;
+    
+}
+
+
+//UPDATE do nivel. Retorna 1 se sucesso, 0 se falha
+int update_nivel_personagem(Personagem* personagem){
+
+    int novo_nivel = 0;
+
+    printf("O nivel atual do persoangem eh: %d\n", personagem->nivel);
+ 
+    int n;
+    while((n = getchar() != '\n' && n != EOF)); //Outra limpeza de buffer
+
+    printf("Digite o novo nivel do personagem: ");
+    scanf("%d", &novo_nivel); //TODO: Adicionar tratamento de erro aqui
+
+    personagem->nivel = novo_nivel;
+
+
+    return 1;
+    
+}
+
+
+//UPDATE da exp. Retorna 1 se sucesso, 0 se falha
+int update_exp_personagem(Personagem* personagem){
+
+    int nova_exp = 0;
+
+    printf("A experiencia atual do persoangem eh: %d\n", personagem->exp);
+ 
+    int n;
+    while((n = getchar() != '\n' && n != EOF)); //Outra limpeza de buffer
+
+    printf("Digite a nova experiencia do personagem: ");
+    scanf("%d", &nova_exp); //TODO: Adicionar tratamento de erro aqui
+
+    personagem->exp = nova_exp;
+
+
+    return 1;
+    
+}
+
 //DELETE
 
 
@@ -340,8 +413,8 @@ int main(void){
         printf("Peronsagem NAO ENCONTRADO!\n");
     }
 
-    update_descricao_personagem(teste_busca);
-    printf("DESC NOVA: %s", teste_busca->descricao);
+    update_atributo_personagem(teste_busca);
+    printf("DEX NOVA: %d - %d\n", teste_busca->atributos[1], teste_busca->mod_atributos[1]);
 
     //Desaloca
     free(teste_personagem.nome);
