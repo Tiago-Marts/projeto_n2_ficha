@@ -86,9 +86,37 @@ void define_mod_atributos(Personagem* personagem, int atributo, int valor){
     personagem->mod_atributos[atributo-1] = valor;
 }
 
-//Todo: Nao pode repedir atributo
+//Faz a distribuicao de valores predefinidos para os atributos. O jogador escolhe para qual atributo o valor ira
 void atributo__distribuicao_padrao(Personagem *personagem){
+    int distribuicao[6] = {15,14,13,12,10,8};
+    int escolhas[6] = {0,0,0,0,0,0};
+    int escolha_atributo = 0;
+    for(int i = 1; i <= 6; i++){
+        distribuicao_atributo:
+            menu_atributos();
+            printf("Para qual atributo o valor %d devera ir?\n", distribuicao[i-1]);
+            printf("Digite o atributo escolhido: ");
+            scanf("%d", &escolha_atributo);
 
+            //Verifica se o atributo esta no intervalo correto
+            if(escolha_atributo < 1 || escolha_atributo > 6){
+                printf("\nNumero invalido, digite novamente\n");
+                goto distribuicao_atributo;
+            }
+
+            //Verifico se o atributo ja foi escolhido (usa o array definido no inicio para isso)
+            for(int j = 0; j < 6; j++){
+                if(escolha_atributo == escolhas[j]) {
+                    printf("\nAtributo ja foi escolhido anteriormente, tente novamente\n");
+                    goto distribuicao_atributo;
+                }
+            }
+
+            //Se passar, adicionamos no array de escolhas
+            escolhas[i] = escolha_atributo;
+
+            define_atributo(personagem, escolha_atributo, distribuicao[i-1]);
+    }
 }
 
 //A gente usa o metodo do D&D 5e para calcular os modificadores de atributos
@@ -425,6 +453,10 @@ void delete_personagem_por_nome(Personagens* banco_personagens, char* nome){
 void print_array_personagens(Personagens* banco_personagens){
     for(size_t i = 0; i < banco_personagens->contador; i++){
         printf("ID: %d - Nome: %s", banco_personagens->personagem_ptrs[i].id_personagem, banco_personagens->personagem_ptrs[i].nome);
+        printf("ATRIBUTOS: \n");
+        for(int j = 0; j < 6; j++){
+            printf("\t%d - %d\n", banco_personagens->personagem_ptrs[i].atributos[j], banco_personagens->personagem_ptrs[i].mod_atributos[j]);
+        }
     }
 }
 
@@ -449,8 +481,6 @@ int main(void){
 
 
     delete_personagem_por_id(&banco_personagens, 1);
-
-    print_array_personagens(&banco_personagens);
 
 
     //Desaloca
