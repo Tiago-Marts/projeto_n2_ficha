@@ -1,25 +1,14 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+#include "../include/item.h"
 
 //macros
 #define MAX_NOME 50
 #define MAX_CLASSE 50
 #define MAX_DESC 100
 
-//Structs
-typedef struct {
-    char nome_item[MAX_NOME];
-    char descricao_item[MAX_DESC];
-    int quantidade;
-} Item;
-
-typedef struct {
-    Item *itens;
-    size_t contador;
-    size_t capacidade_array;
-} Inventario;
 
 //Personagem
 typedef struct {
@@ -41,158 +30,6 @@ typedef struct {
     size_t contador;
 } Personagens;
 
-//ITENS
-//Inicializa o array de itens. Retorna 1 se sucesso, 0 se falha
-int init_inventario(Inventario *inventario){
-    inventario->capacidade_array = 100; //Escolha arbitraria tambem
-    inventario->contador = 0;
-    inventario->itens = calloc(inventario->capacidade_array, sizeof(inventario->itens));
-
-    if(!inventario->itens){
-        printf("Erro na cricao do inventario\n");
-        return 0;
-    }
-
-    return 1;
-}
-
-//Adiciona um item ao inventario do personagem. Retorna 1 se sucesso, 0 se falha
-int add_item(Item *item, Inventario *inv){
-    //Verifica o limite
-    if(inv->contador == inv->capacidade_array){
-        size_t novo_limite = inv->capacidade_array * 2;
-        Item *tmp = realloc(inv->itens, novo_limite * sizeof(Item)); //Eh mais seguro alterar um array temp do que alterar diretamente o que usamos
-        if(!tmp){
-            printf("Erro na adicao de item\n");
-            return 0;
-        }
-        inv->itens = tmp;
-        inv->capacidade_array = novo_limite;
-    }
-
-    inv->itens[inv->contador] = *item;
-    inv->contador++;
-    return 1;
-}
-
-//CREATE - Item
-void criacao_item(Item *item_novo){
-    while(getchar() != '\n'); //limpa o buffer
-    printf("Digite o nome do item: ");
-    fgets(item_novo->nome_item, MAX_NOME, stdin);
-
-    printf("Digite uma descricao para o item: ");
-    fgets(item_novo->descricao_item, MAX_DESC, stdin);
-
-    int qnt_item = 0;
-    printf("Digite a quantidade de itens: ");
-    scanf("%d", &qnt_item);
-    item_novo->quantidade = qnt_item;
-}
-
-//READ - Item
-//Busca o item por nome. Retorna o ponteiro para o item, caso o encontre. Se nao, retorna NULL
-Item* busca_item_por_nome(char *nome, Inventario *inv){
-    Item *resultado_busca = NULL;
-    
-    for(size_t i = 0; i < inv->contador; i++){
-        if(!strcmp(nome, inv->itens[i].nome_item)){
-            resultado_busca = &inv->itens[i];
-            return resultado_busca;
-        }
-    }
-
-    return resultado_busca;
-}
-
-//Busca o item por nome e retorna a posicao dele no aray. Se nao for encontrado, retorna -1;
-int get_posicao_item_por_nome(char *nome, Inventario *inv){
-    int resultado_busca = -1; //-1 nao eh uma posicao valida no array, assim fica mais facil de verificar erro na utilizacao da funcao
-
-    for(size_t i = 0; i < inv->contador; i++){
-        if(!strcmp(nome, inv->itens[i].nome_item)){
-            resultado_busca = i;
-            return resultado_busca;
-        }
-    }
-
-    return resultado_busca;
-}
-
-//UPDATE - Item
-int update_nome_item(Item *item){
-    char novo_nome[MAX_NOME];
-    printf("O nome atual do item eh: %s", item->nome_item);
-    printf("Digite o novo nome do item: ");
-    while(getchar() != '\n'); //limpando buffer
-    fgets(novo_nome, MAX_NOME, stdin);
-    char* resultado_copia = NULL;
-
-    resultado_copia = strcpy(item->nome_item, novo_nome);
-    if(!resultado_copia){
-        printf("Erro na atualizacao do nome do item\n");
-        return 0;
-    }
-
-    return 1;
-}
-
-int update_desc_item(Item *item){
-    char nova_desc[MAX_DESC];
-    printf("A descricao atual do item eh: %s", item->descricao_item);
-    printf("Digite a nova descricao do item: ");
-    while(getchar() != '\n'); //limpando buffer
-    fgets(nova_desc, MAX_DESC, stdin);
-    char* resultado_copia = NULL;
-
-    resultado_copia = strcpy(item->descricao_item, nova_desc);
-    if(!resultado_copia){
-        printf("Erro na atualizacao da descricao do item\n");
-        return 0;
-    }
-
-    return 1;
-}
-
-int update_qnt_item(Item *item){
-    int nova_qnt = 0;
-    
-    printf("A quantidade atual do item eh: %d\n", item->quantidade);
-    printf("Digite a nova quantidade do item: ");
-    while(getchar() != '\n'); //limpando buffer
-    scanf("%d", &nova_qnt);
-
-    item->quantidade = nova_qnt;
-
-
-
-    return 1;
-}
-
-//DELETE - Item
-int delete_item_por_nome(char *nome, Inventario *inv){
-    int index = get_posicao_item_por_nome(nome, inv);
-
-    //Se nao acha o item
-    if(index == -1) {
-        printf("ERRO: Item nao encontrado\n");
-        return 0;
-    }
-
-    //O memmove copia bytes de um espaço na memoria pra outro, podendo ocorrer sobreposicao. 
-    //Aqui o utilizamos para sobrepor o item de posicao n pelo n+1
-    memmove(&inv->itens[index], &inv->itens[index+1], (inv->contador - index - 1) * sizeof(Item));
-    inv->contador--;
-    return 1;
-}
-
-//Utilizada no final para desalocar o espaco dos itens e zerar os outros campos.
-void desaloca_itens(Inventario *inv){
-    free(inv->itens);
-    inv->itens = NULL;
-    inv->capacidade_array = 0;
-    inv->contador = 0;
-}
 
 
 
@@ -213,7 +50,7 @@ void create_personagens(Personagens *personagens){
 }
 
 //Adiciona um personagem no array de personagens. Retorna 1 se sucesso, 0 se falha
-int add_personagem(Personagem *personagem, Personagens *array_personagens){
+int add_personagem(Personagem personagem, Personagens *array_personagens){
     //Se chegou no limite, dobra (arbitrario)
     if(array_personagens->contador == array_personagens->capacidade_array){
         size_t novo_limite = array_personagens->capacidade_array*2;
@@ -227,8 +64,9 @@ int add_personagem(Personagem *personagem, Personagens *array_personagens){
         array_personagens->capacidade_array = novo_limite;
     }
 
-    personagem->id_personagem = array_personagens->contador;
-    array_personagens->personagem_ptrs[array_personagens->contador] = *personagem;
+    
+    array_personagens->personagem_ptrs[array_personagens->contador] = personagem;
+    array_personagens->personagem_ptrs[array_personagens->contador].id_personagem = array_personagens->contador;
     array_personagens->contador++;
 
     return 1;
@@ -316,21 +154,22 @@ void atributo_soma_3d6(Personagem *personagem){
 
 
 //Cria personagem e retorna 1 se sucesso e 0 se falha em alguma etapa
-int criacao_personagem(Personagem *personagem){
-    personagem->nome = (char*)malloc((MAX_NOME) * sizeof(char)); //Aloca memoria pro nome
-    personagem->id_personagem = 0;
+int criacao_personagem(Personagens *banco_personagens){
+    Personagem novo_personagem;
+    novo_personagem.nome = (char*)malloc((MAX_NOME) * sizeof(char)); //Aloca memoria pro nome
+    novo_personagem.id_personagem = 0;
     printf("Digite o nome do personagem: ");
-    fflush(stdin);
-    fgets(personagem->nome, MAX_NOME, stdin);
+    while(getchar() != '\n');
+    fgets(novo_personagem.nome, MAX_NOME, stdin);
 
     printf("Digite a classe do personagem: ");
-    fgets(personagem->classe, MAX_CLASSE, stdin);
+    fgets(novo_personagem.classe, MAX_CLASSE, stdin);
 
     printf("Digite uma descricao simples: ");
-    fgets(personagem->descricao, MAX_DESC, stdin);
+    fgets(novo_personagem.descricao, MAX_DESC, stdin);
 
-    personagem->nivel = 1;
-    personagem->exp = 0;
+    novo_personagem.nivel = 1;
+    novo_personagem.exp = 0;
 
     int opt_atributos = 0;
     while(opt_atributos != 1 && opt_atributos != 2){
@@ -343,11 +182,11 @@ int criacao_personagem(Personagem *personagem){
         switch (opt_atributos)
         {
         case 1:
-            atributo__distribuicao_padrao(personagem);
+            atributo__distribuicao_padrao(&novo_personagem);
             break;
 
         case 2:
-            atributo_soma_3d6(personagem);
+            atributo_soma_3d6(&novo_personagem);
             break;
 
         default:
@@ -356,22 +195,24 @@ int criacao_personagem(Personagem *personagem){
         }
 
         //Define o modificador dos atributos
-        calcula_mod_atributos(personagem);
+        calcula_mod_atributos(&novo_personagem);
 
-        init_inventario(&personagem->inventario);
-        int qnt_itens = 0;
-        printf("Digite a quantidade de itens a ser adicionado: ");
-        scanf("%d", &qnt_itens);
 
-        for(int i = 0; i < qnt_itens; i++){
-            Item novo_item;
-            criacao_item(&novo_item);
-            add_item(&novo_item, &personagem->inventario);
-        }
-
-        return 1;
     }
 
+
+    init_inventario(&novo_personagem.inventario);
+    int qnt_itens = 0;
+    printf("Digite a quantidade de itens a ser adicionado: ");
+    scanf("%d", &qnt_itens);
+
+    for(int i = 0; i < qnt_itens; i++){
+        Item novo_item;
+        criacao_item(&novo_item);
+        add_item(&novo_item, &novo_personagem.inventario);
+    }
+
+    add_personagem(novo_personagem, banco_personagens);
     return 1;
 }
 
@@ -553,7 +394,6 @@ int update_atributo_personagem(Personagem* personagem){
     
 }
 
-
 //UPDATE do nivel. Retorna 1 se sucesso, 0 se falha
 int update_nivel_personagem(Personagem* personagem){
 
@@ -596,86 +436,7 @@ int update_exp_personagem(Personagem* personagem){
 }
 
 
-int update_inventario(Personagem *personagem){
-    char nome[MAX_NOME];
-    while(getchar() != '\n'); //limpando buffer
-    printf("Digite o nome do item a ser atualizado: ");
-    fgets(nome, MAX_NOME, stdin);
-
-    Item *novo_item = busca_item_por_nome(nome, &personagem->inventario);
-    if(!novo_item){
-        printf("Item nao encontrado\n");
-        return 0;
-    }
-
-    printf("Opcoes de atualizacao: \n");
-    printf("\t1.Atualizar nome do item\n");
-    printf("\t2.Atualizar descricao do item\n ");
-    printf("\t3.Atualizar quantidade do item\n");
-    printf("Digite a opcao escolhida: ");
-    int escolha = 0;
-    scanf("%d", &escolha);
-    switch(escolha){
-        case 1:
-            update_nome_item(novo_item);
-            break;
-        case 2:
-            update_desc_item(novo_item);
-            break;
-        case 3:
-            update_qnt_item(novo_item);
-            break;
-        default:
-            printf("Opcao invalida. Retornando...\n");
-            break;
-    }
-    return 1;
-}
-
-//Menu do update de personagem
-int update_personagem(Personagem *personagem){
-    printf("Opcoes de atualizao de personagem: \n");
-    printf("\t1.Atualizar nome\n");
-    printf("\t2.Atualizar classe\n");
-    printf("\t3.Atualizar descricao\n");
-    printf("\t4.Atualizar atributos\n");
-    printf("\t5.Atualizar nivel\n");
-    printf("\t6.Atualizar experiencia\n");
-    printf("\t7.Atualizar inventario\n");
-    int escolha = 0;
-    printf("Digite a opcao escolhida: ");
-    scanf("%d", &escolha);
-    switch(escolha){
-        case 1:
-            update_nome_personagem(personagem);
-            break;
-        case 2:
-            update_classe_personagem(personagem);
-            break;
-        case 3:
-            update_descricao_personagem(personagem);
-            break;
-        case 4:
-            update_atributo_personagem(personagem);
-            break;
-        case 5:
-            update_nivel_personagem(personagem);
-            break;
-        case 6:
-            update_exp_personagem(personagem);
-            break;
-        case 7:
-            update_inventario(personagem);
-            break;
-        default:
-            printf("Opcao invalida. Retornando...\n");
-            break;
-    }
-    return 1;
-}
-
 //DELETE: o processo acontece em duas etapas. Primero, a gente muda a posicao dos objetos no array. Depois a gente realoca as posicoes dos ponteiros na memoria
-
 //Realoca os ponteiros do array, necessario depois que a gente apaga um elemento dele. 
 void realoc_array_personagens(Personagens* banco_personagens){
 
@@ -708,54 +469,15 @@ void delete_personagem(Personagem *personagem, Personagens *banco_personagens){
     realoc_array_personagens(banco_personagens);
 }
 
-//Printa o ID e Nome do personagem, por comodidade
-void print_array_personagens(Personagens* banco_personagens){
-    for(size_t i = 0; i < banco_personagens->contador; i++){
-        Personagem personagem = banco_personagens->personagem_ptrs[i];
-        printf("ID: %d - Nome: %s", personagem.id_personagem, personagem.nome);
-
-        printf("ATRIBUTOS: \n");
-        for(int j = 0; j < 6; j++){
-            printf("\t%d - %d\n", personagem.atributos[j], personagem.mod_atributos[j]);
-        }
-
-        int tamanho_inventario = personagem.inventario.contador;
-        printf("INVENTARIO\n");
-        for(int k = 0; k < tamanho_inventario; k++){
-            Item item = personagem.inventario.itens[k];
-            printf("\tNOME:%s \tDESC.:%s \tQUANTIDADE:%d\n", item.nome_item, item.descricao_item, item.quantidade);
-        }
+//Desaloca a memoria que foi alocada dinamicamente durante a execucao do programa
+void desaloca(Personagens *banco_personagens){
+    size_t contador = banco_personagens->contador;
+    for(size_t i = 0; i < contador; i++){
+        free(banco_personagens->personagem_ptrs[i].nome); //O nome foi alocado dinamicamente na criacao do personagem
+        desaloca_itens(&banco_personagens->personagem_ptrs[i].inventario);
     }
-}
-
-int main(void){
-    Personagens banco_personagens;
-    create_personagens(&banco_personagens);
-
-
-    //Teste temporario de criacao. Vou apagar depois
-    Personagem teste_personagem;
-
-
-    criacao_personagem(&teste_personagem);
-    add_personagem(&teste_personagem, &banco_personagens);
-
-    Personagem teste_2 = teste_personagem;
-    teste_2.nome = "Nome legal\n";
-    add_personagem(&teste_2, &banco_personagens);
-    add_personagem(&teste_2, &banco_personagens);
-    
-    print_array_personagens(&banco_personagens);
-    delete_personagem(&teste_personagem, &banco_personagens);
-
-    printf("APOS DELETE: \n");
-    print_array_personagens(&banco_personagens);
-
-    //delete_personagem_por_id(&banco_personagens, 1);
-
-
-    //Desaloca
-    free(teste_personagem.nome);
-    free(banco_personagens.personagem_ptrs);
-    return 0;
+    free(banco_personagens->personagem_ptrs);
+    banco_personagens->personagem_ptrs = NULL;
+    banco_personagens->contador = 0;
+    banco_personagens->capacidade_array = 0;
 }
