@@ -124,6 +124,7 @@ int update_nome_item(Item *item){
     char novo_nome[MAX_NOME];
     printf("O nome atual do item eh: %s", item->nome_item);
     printf("Digite o novo nome do item: ");
+    while(getchar() != '\n'); //limpando buffer
     fgets(novo_nome, MAX_NOME, stdin);
     char* resultado_copia = NULL;
 
@@ -140,6 +141,7 @@ int update_desc_item(Item *item){
     char nova_desc[MAX_DESC];
     printf("A descricao atual do item eh: %s", item->descricao_item);
     printf("Digite a nova descricao do item: ");
+    while(getchar() != '\n'); //limpando buffer
     fgets(nova_desc, MAX_DESC, stdin);
     char* resultado_copia = NULL;
 
@@ -154,9 +156,10 @@ int update_desc_item(Item *item){
 
 int update_qnt_item(Item *item){
     int nova_qnt = 0;
-
+    
     printf("A quantidade atual do item eh: %d\n", item->quantidade);
     printf("Digite a nova quantidade do item: ");
+    while(getchar() != '\n'); //limpando buffer
     scanf("%d", &nova_qnt);
 
     item->quantidade = nova_qnt;
@@ -311,7 +314,6 @@ void atributo_soma_3d6(Personagem *personagem){
     }
 }
 
-//Cria item
 
 //Cria personagem e retorna 1 se sucesso e 0 se falha em alguma etapa
 int criacao_personagem(Personagem *personagem){
@@ -387,6 +389,19 @@ Personagem* busca_personagem_por_id(unsigned int id_busca, Personagens* banco_pe
     return resultado_busca;
 }
 
+int get_posicao_personagem_por_id(unsigned int id_busca, Personagens* banco_personagens){
+    int resultado_busca = -1;
+    for(unsigned int i = 0; i < banco_personagens->contador; i++){
+        if(id_busca == banco_personagens->personagem_ptrs[i].id_personagem){
+            resultado_busca = i;
+            return resultado_busca;
+        }
+    }
+
+    return resultado_busca;
+}
+
+
 // Busca o personagem por nome e retorna o ponteiro encontrado. Se nao encontrar nada retorna NULL
 Personagem* busca_personagem_por_nome(char *nome_busca, Personagens* banco_personagens){
     Personagem* resultado_busca = NULL;
@@ -400,8 +415,19 @@ Personagem* busca_personagem_por_nome(char *nome_busca, Personagens* banco_perso
     return resultado_busca;
 }
 
-//UPDATE
+int get_posicao_personagem_por_nome(char *nome_busca, Personagens* banco_personagens){
+    int resultado_busca = -1;
+    for(unsigned int i = 0; i < banco_personagens->contador; i++){
+        if(!strcmp(nome_busca, banco_personagens->personagem_ptrs[i].nome)){
+            resultado_busca = i;
+            return resultado_busca;
+        }
+    }
 
+    return resultado_busca;
+}
+
+//UPDATE
 //UPDATE do nome. Retorna 1 se sucesso, 0 se falha
 int update_nome_personagem(Personagem* personagem){
 
@@ -570,6 +596,84 @@ int update_exp_personagem(Personagem* personagem){
 }
 
 
+int update_inventario(Personagem *personagem){
+    char nome[MAX_NOME];
+    while(getchar() != '\n'); //limpando buffer
+    printf("Digite o nome do item a ser atualizado: ");
+    fgets(nome, MAX_NOME, stdin);
+
+    Item *novo_item = busca_item_por_nome(nome, &personagem->inventario);
+    if(!novo_item){
+        printf("Item nao encontrado\n");
+        return 0;
+    }
+
+    printf("Opcoes de atualizacao: \n");
+    printf("\t1.Atualizar nome do item\n");
+    printf("\t2.Atualizar descricao do item\n ");
+    printf("\t3.Atualizar quantidade do item\n");
+    printf("Digite a opcao escolhida: ");
+    int escolha = 0;
+    scanf("%d", &escolha);
+    switch(escolha){
+        case 1:
+            update_nome_item(novo_item);
+            break;
+        case 2:
+            update_desc_item(novo_item);
+            break;
+        case 3:
+            update_qnt_item(novo_item);
+            break;
+        default:
+            printf("Opcao invalida. Retornando...\n");
+            break;
+    }
+    return 1;
+}
+
+//Menu do update de personagem
+int update_personagem(Personagem *personagem){
+    printf("Opcoes de atualizao de personagem: \n");
+    printf("\t1.Atualizar nome\n");
+    printf("\t2.Atualizar classe\n");
+    printf("\t3.Atualizar descricao\n");
+    printf("\t4.Atualizar atributos\n");
+    printf("\t5.Atualizar nivel\n");
+    printf("\t6.Atualizar experiencia\n");
+    printf("\t7.Atualizar inventario\n");
+    int escolha = 0;
+    printf("Digite a opcao escolhida: ");
+    scanf("%d", &escolha);
+    switch(escolha){
+        case 1:
+            update_nome_personagem(personagem);
+            break;
+        case 2:
+            update_classe_personagem(personagem);
+            break;
+        case 3:
+            update_descricao_personagem(personagem);
+            break;
+        case 4:
+            update_atributo_personagem(personagem);
+            break;
+        case 5:
+            update_nivel_personagem(personagem);
+            break;
+        case 6:
+            update_exp_personagem(personagem);
+            break;
+        case 7:
+            update_inventario(personagem);
+            break;
+        default:
+            printf("Opcao invalida. Retornando...\n");
+            break;
+    }
+    return 1;
+}
+
 //DELETE: o processo acontece em duas etapas. Primero, a gente muda a posicao dos objetos no array. Depois a gente realoca as posicoes dos ponteiros na memoria
 
 //Realoca os ponteiros do array, necessario depois que a gente apaga um elemento dele. 
@@ -587,35 +691,16 @@ void realoc_array_personagens(Personagens* banco_personagens){
     banco_personagens->personagem_ptrs = tmp_personagens;
 }
 
-
 //DELETE PERSONAGEM: Verifica se o personagem existe, muda a posicao dos objetos no array e depois realoca a posicao da memoria dos ponteiros
-void delete_personagem_por_id(Personagens* banco_personagens, int id){
-    //Busca o personagem, se nao existir da erro
-    if(!busca_personagem_por_id(id, banco_personagens)){
-        printf("ERRO: personagem nao existe no sistema. Retornando...\n");
+void delete_personagem(Personagem *personagem, Personagens *banco_personagens){
+    int index = get_posicao_personagem_por_id(personagem->id_personagem, banco_personagens);
+    if(index == -1){
+        printf("Personagem nao encontrado...\n");
         return;
     }
 
-    //1 - Muda a posicao no array
-    for(size_t i = id; i < banco_personagens->contador - 1; i++){
-        banco_personagens->personagem_ptrs[i] = banco_personagens->personagem_ptrs[i+1];
-    }
-
-    //2 - Realoca o array
-    realoc_array_personagens(banco_personagens);
-}
-
-//DELETE PERSONAGEM POR NOME: Verifica se o personagem existe, muda a posicao dos objetos no array e depois realoca a posicao da memoria dos ponteiros
-void delete_personagem_por_nome(Personagens* banco_personagens, char* nome){
-    //Busca o personagem, se nao existir da erro
-    Personagem* busca = busca_personagem_por_nome(nome, banco_personagens);
-    if(!busca){
-        printf("ERRO: personagem nao existe no sistema. Retornando...\n");
-        return;
-    }
-
-    //1 - Muda a posicao no array
-    for(size_t i = busca->id_personagem; i < banco_personagens->contador - 1; i++){
+        //1 - Muda a posicao no array
+    for(size_t i = index; i < banco_personagens->contador - 1; i++){
         banco_personagens->personagem_ptrs[i] = banco_personagens->personagem_ptrs[i+1];
     }
 
@@ -628,7 +713,7 @@ void print_array_personagens(Personagens* banco_personagens){
     for(size_t i = 0; i < banco_personagens->contador; i++){
         Personagem personagem = banco_personagens->personagem_ptrs[i];
         printf("ID: %d - Nome: %s", personagem.id_personagem, personagem.nome);
-        
+
         printf("ATRIBUTOS: \n");
         for(int j = 0; j < 6; j++){
             printf("\t%d - %d\n", personagem.atributos[j], personagem.mod_atributos[j]);
@@ -661,9 +746,12 @@ int main(void){
     add_personagem(&teste_2, &banco_personagens);
     
     print_array_personagens(&banco_personagens);
+    delete_personagem(&teste_personagem, &banco_personagens);
 
+    printf("APOS DELETE: \n");
+    print_array_personagens(&banco_personagens);
 
-    delete_personagem_por_id(&banco_personagens, 1);
+    //delete_personagem_por_id(&banco_personagens, 1);
 
 
     //Desaloca
